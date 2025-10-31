@@ -13,12 +13,12 @@ import type { SidebarItem } from './types';
         <ng-container *ngFor="let group of groupedItems">
           <div class="sidebar-group" *ngIf="group.label">
             <div class="sidebar-group-label">{{ group.label }}</div>
-            <a *ngFor="let item of group.items" class="sidebar-link" [class.active]="item.slug === currentSlug" [href]="'/' + item.slug">
+            <a *ngFor="let item of group.items" class="sidebar-link" [class.active]="item.slug === currentSlug" [href]="'./' + item.slug">
               {{ item.title }}
             </a>
           </div>
           <ng-container *ngIf="!group.label">
-            <a *ngFor="let item of group.items" class="sidebar-link" [class.active]="item.slug === currentSlug" [href]="'/' + item.slug">
+            <a *ngFor="let item of group.items" class="sidebar-link" [class.active]="item.slug === currentSlug" [href]="'./' + item.slug">
               {{ item.title }}
             </a>
           </ng-container>
