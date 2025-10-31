@@ -48,7 +48,7 @@ export function buildNavigation(entries: CollectionEntry<'pages'>[]): NavData {
     return {
       id,
       label: NAV_LABELS[id] ?? id,
-      href: `/${items[0]?.slug ?? ''}`,
+      href: `./${items[0]?.slug ?? ''}`,
       pages: items.map((item) => ({
         title: item.data.title,
         slug: item.slug,
