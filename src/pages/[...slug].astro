@@ -1,0 +1,44 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
+import { buildNavigation, mapHeadings } from '../utils/navigation';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('pages');
+  const onlyPage = import.meta.env.ONLY_PAGE ?? process.env.ONLY_PAGE;
+
+  return entries
+    .filter((entry) => {
+      if (!onlyPage) return true;
+      return entry.slug === onlyPage;
+    })
+    .map((entry) => ({
+      params: { slug: entry.slug },
+      props: { slug: entry.slug }
+    }));
+}
+
+const entries = await getCollection('pages');
+const { navGroups, sidebarItems } = buildNavigation(entries);
+const slug = Astro.props.slug as string;
+const page = entries.find((entry) => entry.slug === slug);
+
+if (!page) {
+  throw new Error(`Không tìm thấy trang với slug ${slug}`);
+}
+
+const { Content, headings } = await page.render();
+---
+<MainLayout
+  title={`${page.data.title} | Blog cá nhân`}
+  description={page.data.description}
+  navGroups={navGroups}
+  sidebarItems={sidebarItems}
+  currentSlug={page.slug}
+  headings={mapHeadings(headings)}
+>
+  <article>
+    <h1>{page.data.title}</h1>
+    <Content />
+  </article>
+</MainLayout>
