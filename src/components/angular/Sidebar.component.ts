@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import type { SidebarItem } from './types';
+import { withBase } from '../../utils/base-url';
 
 @Component({
   selector: 'sidebar-list',
@@ -13,12 +14,22 @@ import type { SidebarItem } from './types';
         <ng-container *ngFor="let group of groupedItems">
           <div class="sidebar-group" *ngIf="group.label">
             <div class="sidebar-group-label">{{ group.label }}</div>
-            <a *ngFor="let item of group.items" class="sidebar-link" [class.active]="item.slug === currentSlug" [href]="'/' + item.slug">
+            <a
+              *ngFor="let item of group.items"
+              class="sidebar-link"
+              [class.active]="item.slug === currentSlug"
+              [attr.href]="hrefFor('/' + item.slug)"
+            >
               {{ item.title }}
             </a>
           </div>
           <ng-container *ngIf="!group.label">
-            <a *ngFor="let item of group.items" class="sidebar-link" [class.active]="item.slug === currentSlug" [href]="'/' + item.slug">
+            <a
+              *ngFor="let item of group.items"
+              class="sidebar-link"
+              [class.active]="item.slug === currentSlug"
+              [attr.href]="hrefFor('/' + item.slug)"
+            >
               {{ item.title }}
             </a>
           </ng-container>
@@ -79,6 +90,8 @@ import type { SidebarItem } from './types';
 export class SidebarComponent {
   @Input({ required: true }) items: SidebarItem[] = [];
   @Input({ required: true }) currentSlug = '';
+
+  readonly hrefFor = withBase;
 
   get groupedItems() {
     const groups = new Map<string, SidebarItem[]>();
