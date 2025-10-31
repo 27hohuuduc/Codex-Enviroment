@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, signal } from '@angular/core';
 import type { NavGroup } from './types';
-import { withBase } from '../../utils/base-url';
 
 @Component({
   selector: 'nav-bar',
@@ -10,19 +9,13 @@ import { withBase } from '../../utils/base-url';
   template: `
     <header class="nav-wrapper" [class.nav-scrolled]="scrolled()">
       <div class="nav-inner">
-        <a class="brand" [attr.href]="hrefFor('/')">My Personal Space</a>
+        <a class="brand" href="/">My Personal Space</a>
         <nav class="nav-links">
           <ng-container *ngFor="let item of items">
             <div class="nav-item" [class.has-dropdown]="item.pages.length > 1">
-              <a class="nav-link" [attr.href]="hrefFor(item.href)">{{ item.label }}</a>
+              <a class="nav-link" [href]="item.href">{{ item.label }}</a>
               <div class="dropdown" *ngIf="item.pages.length > 1">
-                <a
-                  *ngFor="let page of item.pages"
-                  class="dropdown-item"
-                  [attr.href]="hrefFor('/' + page.slug)"
-                >
-                  {{ page.title }}
-                </a>
+                <a *ngFor="let page of item.pages" class="dropdown-item" [href]="'/' + page.slug">{{ page.title }}</a>
               </div>
             </div>
           </ng-container>
@@ -135,8 +128,6 @@ import { withBase } from '../../utils/base-url';
 })
 export class NavBarComponent {
   @Input({ required: true }) items: NavGroup[] = [];
-
-  readonly hrefFor = withBase;
 
   private scrolledState = signal(false);
 
