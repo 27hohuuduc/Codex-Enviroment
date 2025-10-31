@@ -4,7 +4,7 @@ import { getCollection } from 'astro:content';
 import { buildNavigation, mapHeadings } from '../utils/navigation';
 
 const entries = await getCollection('pages');
-const { navGroups, sidebarItems } = buildNavigation(entries);
+const { navGroups, sidebarItems, baseHref } = buildNavigation(entries);
 const heroPage = entries.find((entry) => entry.slug === 'introduction');
 ---
 <MainLayout
@@ -14,6 +14,7 @@ const heroPage = entries.find((entry) => entry.slug === 'introduction');
   sidebarItems={sidebarItems}
   currentSlug={heroPage?.slug ?? ''}
   headings={heroPage ? mapHeadings((await heroPage.render()).headings) : []}
+  baseHref={baseHref}
 >
   <section>
     <h1>Chào mừng đến với không gian cá nhân</h1>
