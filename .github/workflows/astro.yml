@@ -27,6 +27,7 @@ jobs:
       - name: Build project
         env:
           CI: true
+          URL_PAGE: ${{ github.repository }}
         run: npm run build
 
       - name: Upload build artifact

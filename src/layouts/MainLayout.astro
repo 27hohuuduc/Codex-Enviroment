@@ -18,18 +18,21 @@ interface Props {
       slug: string;
       description?: string;
       navGroup: 'docs' | 'information' | 'playground' | 'other';
+      href: string;
     }[];
   }[];
   sidebarItems: {
     title: string;
     slug: string;
     group?: string;
+    href: string;
   }[];
   currentSlug: string;
   headings: HeadingLink[];
+  baseHref: string;
 }
 
-const { title, description, navGroups, sidebarItems, currentSlug, headings } = Astro.props as Props;
+const { title, description, navGroups, sidebarItems, currentSlug, headings, baseHref } = Astro.props as Props;
 ---
 <!doctype html>
 <html lang="vi" data-theme="light">
@@ -132,7 +135,7 @@ const { title, description, navGroups, sidebarItems, currentSlug, headings } = A
     </style>
   </head>
   <body>
-    <NavBarComponent client:load items={navGroups} />
+    <NavBarComponent client:load items={navGroups} baseHref={baseHref} />
     <div class="layout-container">
       <SidebarComponent client:load items={sidebarItems} currentSlug={currentSlug} />
       <main class="content-area">

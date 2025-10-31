@@ -3,6 +3,7 @@ export interface NavigationPage {
   slug: string;
   description?: string;
   navGroup: 'docs' | 'information' | 'playground' | 'other';
+  href: string;
 }
 
 export interface NavGroup {
@@ -16,6 +17,7 @@ export interface SidebarItem {
   title: string;
   slug: string;
   group?: string;
+  href: string;
 }
 
 export interface HeadingLink {

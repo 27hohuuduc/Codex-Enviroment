@@ -19,7 +19,7 @@ export async function getStaticPaths() {
 }
 
 const entries = await getCollection('pages');
-const { navGroups, sidebarItems } = buildNavigation(entries);
+const { navGroups, sidebarItems, baseHref } = buildNavigation(entries);
 const slug = Astro.props.slug as string;
 const page = entries.find((entry) => entry.slug === slug);
 
@@ -36,6 +36,7 @@ const { Content, headings } = await page.render();
   sidebarItems={sidebarItems}
   currentSlug={page.slug}
   headings={mapHeadings(headings)}
+  baseHref={baseHref}
 >
   <article>
     <h1>{page.data.title}</h1>

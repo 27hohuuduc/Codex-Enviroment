@@ -5,6 +5,8 @@
 declare global {
   interface ImportMetaEnv {
     readonly ONLY_PAGE?: string;
+    readonly URL_PAGE?: string;
+    readonly PUBLIC_URL_PAGE?: string;
   }
 }
 export {};

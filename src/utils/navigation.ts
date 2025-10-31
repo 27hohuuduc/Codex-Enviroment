@@ -11,13 +11,16 @@ export interface NavData {
       slug: string;
       description?: string;
       navGroup: 'docs' | 'information' | 'playground' | 'other';
+      href: string;
     }[];
   }[];
   sidebarItems: {
     title: string;
     slug: string;
     group?: string;
+    href: string;
   }[];
+  baseHref: string;
 }
 
 const NAV_LABELS: Record<string, string> = {
@@ -27,7 +30,35 @@ const NAV_LABELS: Record<string, string> = {
   other: 'Other'
 };
 
+function resolveBaseSegment() {
+  const raw =
+    import.meta.env.URL_PAGE ??
+    import.meta.env.PUBLIC_URL_PAGE ??
+    process.env.URL_PAGE ??
+    process.env.PUBLIC_URL_PAGE ??
+    '';
+
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  return trimmed.replace(/^\/+|\/+$/g, '');
+}
+
 export function buildNavigation(entries: CollectionEntry<'pages'>[]): NavData {
+  const baseSegment = resolveBaseSegment();
+  const basePrefix = baseSegment ? `/${baseSegment}` : '';
+  const homeHref = basePrefix || '/';
+
+  const buildHref = (slug: string) => {
+    const trimmedSlug = slug.replace(/^\/+/, '');
+    if (!trimmedSlug) {
+      return homeHref;
+    }
+    return basePrefix ? `${basePrefix}/${trimmedSlug}` : `/${trimmedSlug}`;
+  };
+
   const sorted = [...entries].sort((a, b) => {
     const orderA = a.data.order ?? Number.MAX_SAFE_INTEGER;
     const orderB = b.data.order ?? Number.MAX_SAFE_INTEGER;
@@ -48,12 +79,13 @@ export function buildNavigation(entries: CollectionEntry<'pages'>[]): NavData {
     return {
       id,
       label: NAV_LABELS[id] ?? id,
-      href: `/${items[0]?.slug ?? ''}`,
+      href: buildHref(items[0]?.slug ?? ''),
       pages: items.map((item) => ({
         title: item.data.title,
         slug: item.slug,
         description: item.data.description,
-        navGroup: item.data.navGroup
+        navGroup: item.data.navGroup,
+        href: buildHref(item.slug)
       }))
     };
   });
@@ -61,10 +93,11 @@ export function buildNavigation(entries: CollectionEntry<'pages'>[]): NavData {
   const sidebarItems = sorted.map((entry) => ({
     title: entry.data.title,
     slug: entry.slug,
-    group: entry.data.sidebarGroup
+    group: entry.data.sidebarGroup,
+    href: buildHref(entry.slug)
   }));
 
-  return { navGroups, sidebarItems };
+  return { navGroups, sidebarItems, baseHref: homeHref };
 }
 
 export function mapHeadings(headings: Heading[]): {
