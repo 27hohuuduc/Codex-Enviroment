@@ -13,6 +13,9 @@ export default defineConfig({
     })
   ],
   output: 'static',
+  build: {
+    assetsPrefix: '.'
+  },
   experimental: {
     contentIntellisense: true
   }
