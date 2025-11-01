@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, signal } from '@angular/core';
+import { Component, ElementRef, effect, signal, ViewChild } from '@angular/core';
+import type { AfterViewInit } from '@angular/core';
 
 type ThemeOption = 'system' | 'light' | 'dark';
 type LanguageOption = 'vi' | 'en';
@@ -9,7 +10,7 @@ type LanguageOption = 'vi' | 'en';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <dialog class="settings-dialog" [open]="opened()" (close)="handleClose()">
+    <dialog #dialogRef class="settings-dialog" (close)="handleClose()">
       <form method="dialog" class="dialog-content" (submit)="$event.preventDefault()">
         <header>
           <div>
@@ -65,6 +66,11 @@ type LanguageOption = 'vi' | 'en';
       background: rgba(15, 23, 42, 0.35);
     }
     .settings-dialog {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
       border: none;
       border-radius: 1rem;
       padding: 0;
@@ -72,6 +78,7 @@ type LanguageOption = 'vi' | 'en';
       background: var(--surface-elevated);
       color: var(--text-strong);
       box-shadow: 0 20px 60px rgba(15, 23, 42, 0.35);
+      z-index: 1000;
     }
     .dialog-content {
       padding: 1.5rem;
@@ -144,11 +151,12 @@ type LanguageOption = 'vi' | 'en';
     }
   `]
 })
-export class SettingsDialogComponent {
+export class SettingsDialogComponent implements AfterViewInit {
   readonly themeOptions: ThemeOption[] = ['system', 'light', 'dark'];
   readonly languageOptions: LanguageOption[] = ['vi', 'en'];
   private readonly themeStorageKey = 'personal-blog-theme';
   private readonly languageStorageKey = 'personal-blog-language';
+  @ViewChild('dialogRef') private dialogRef?: ElementRef<HTMLDialogElement>;
   opened = signal(false);
   theme = signal<ThemeOption>('system');
   language = signal<LanguageOption>('vi');
@@ -183,12 +191,32 @@ export class SettingsDialogComponent {
     });
   }
 
+  ngAfterViewInit() {
+    if (this.opened()) {
+      this.setOpened(true);
+    }
+  }
+
   setOpened(value: boolean) {
     this.opened.set(value);
+    const dialog = this.dialogRef?.nativeElement;
+    if (!dialog) {
+      return;
+    }
+
+    if (value) {
+      if (!dialog.open) {
+        dialog.showModal();
+      } else {
+        dialog.focus();
+      }
+    } else if (dialog.open) {
+      dialog.close();
+    }
   }
 
   handleClose() {
-    this.setOpened(false);
+    this.opened.set(false);
   }
 
   changeTheme(option: ThemeOption) {
