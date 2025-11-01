@@ -14,7 +14,7 @@ export default defineConfig({
   ],
   output: 'static',
   build: {
-    assetsPrefix: '.'
+    assetsPrefix: '/{URL_PAGE}/'
   },
   experimental: {
     contentIntellisense: true
