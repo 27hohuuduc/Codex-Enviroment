@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, effect, signal } from '@angular/core';
 
 type ThemeOption = 'system' | 'light' | 'dark';
+type LanguageOption = 'vi' | 'en';
 
 @Component({
   selector: 'settings-dialog',
@@ -11,15 +12,45 @@ type ThemeOption = 'system' | 'light' | 'dark';
     <dialog class="settings-dialog" [open]="opened()" (close)="handleClose()">
       <form method="dialog" class="dialog-content" (submit)="$event.preventDefault()">
         <header>
-          <h2>Thiết lập hiển thị</h2>
-          <button type="button" class="close" (click)="setOpened(false)">×</button>
+          <div>
+            <h2>Tùy chỉnh hiển thị</h2>
+            <p class="subtitle">Điều chỉnh giao diện và ngôn ngữ theo ý bạn.</p>
+          </div>
+          <button type="button" class="close" (click)="setOpened(false)" aria-label="Đóng">×</button>
         </header>
-        <section>
-          <h3>Giao diện</h3>
-          <div class="theme-options">
-            <label *ngFor="let option of themeOptions">
-              <input type="radio" name="theme" [value]="option" [checked]="theme() === option" (change)="changeTheme(option)" />
+        <section class="setting-group">
+          <div class="group-heading">
+            <h3>Giao diện</h3>
+            <p>Chọn chế độ sáng, tối hoặc theo hệ thống.</p>
+          </div>
+          <div class="options-grid">
+            <label *ngFor="let option of themeOptions" [class.selected]="theme() === option">
+              <input
+                type="radio"
+                name="theme"
+                [value]="option"
+                [checked]="theme() === option"
+                (change)="changeTheme(option)"
+              />
               <span>{{ getThemeLabel(option) }}</span>
+            </label>
+          </div>
+        </section>
+        <section class="setting-group">
+          <div class="group-heading">
+            <h3>Ngôn ngữ</h3>
+            <p>Đổi ngôn ngữ hiển thị nội dung trang.</p>
+          </div>
+          <div class="options-grid">
+            <label *ngFor="let option of languageOptions" [class.selected]="language() === option">
+              <input
+                type="radio"
+                name="language"
+                [value]="option"
+                [checked]="language() === option"
+                (change)="changeLanguage(option)"
+              />
+              <span>{{ getLanguageLabel(option) }}</span>
             </label>
           </div>
         </section>
@@ -46,16 +77,22 @@ type ThemeOption = 'system' | 'light' | 'dark';
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1.75rem;
     }
     header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
+      gap: 1.5rem;
     }
     header h2 {
       margin: 0;
       font-size: 1.2rem;
+    }
+    .subtitle {
+      margin: 0.35rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.95rem;
     }
     .close {
       border: none;
@@ -65,10 +102,25 @@ type ThemeOption = 'system' | 'light' | 'dark';
       cursor: pointer;
       color: var(--text-muted);
     }
-    section h3 {
-      margin-bottom: 0.75rem;
+    .close:hover,
+    .close:focus-visible {
+      color: var(--text-strong);
+      outline: none;
     }
-    .theme-options {
+    .setting-group {
+      display: grid;
+      gap: 1rem;
+    }
+    .group-heading h3 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+    .group-heading p {
+      margin: 0.35rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .options-grid {
       display: grid;
       gap: 0.75rem;
     }
@@ -81,6 +133,11 @@ type ThemeOption = 'system' | 'light' | 'dark';
       background: color-mix(in srgb, var(--surface-color) 80%, transparent);
       border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
       cursor: pointer;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+    label.selected {
+      border-color: color-mix(in srgb, var(--accent-color) 60%, transparent);
+      background: color-mix(in srgb, var(--accent-color) 18%, transparent);
     }
     input[type='radio'] {
       accent-color: var(--accent-color);
@@ -89,9 +146,12 @@ type ThemeOption = 'system' | 'light' | 'dark';
 })
 export class SettingsDialogComponent {
   readonly themeOptions: ThemeOption[] = ['system', 'light', 'dark'];
-  private readonly storageKey = 'personal-blog-theme';
+  readonly languageOptions: LanguageOption[] = ['vi', 'en'];
+  private readonly themeStorageKey = 'personal-blog-theme';
+  private readonly languageStorageKey = 'personal-blog-language';
   opened = signal(false);
   theme = signal<ThemeOption>('system');
+  language = signal<LanguageOption>('vi');
 
   constructor() {
     if (typeof document !== 'undefined') {
@@ -99,19 +159,27 @@ export class SettingsDialogComponent {
     }
 
     if (typeof window !== 'undefined') {
-      const saved = window.localStorage.getItem(this.storageKey) as ThemeOption | null;
-      if (saved && this.themeOptions.includes(saved)) {
-        this.theme.set(saved);
+      const savedTheme = window.localStorage.getItem(this.themeStorageKey) as ThemeOption | null;
+      if (savedTheme && this.themeOptions.includes(savedTheme)) {
+        this.theme.set(savedTheme);
+      }
+      const savedLanguage = window.localStorage.getItem(this.languageStorageKey) as LanguageOption | null;
+      if (savedLanguage && this.languageOptions.includes(savedLanguage)) {
+        this.language.set(savedLanguage);
       }
       this.applyTheme(this.theme());
+      this.applyLanguage(this.language());
     }
 
     effect(() => {
       const current = this.theme();
+      const currentLanguage = this.language();
       if (typeof window !== 'undefined') {
-        window.localStorage.setItem(this.storageKey, current);
+        window.localStorage.setItem(this.themeStorageKey, current);
+        window.localStorage.setItem(this.languageStorageKey, currentLanguage);
       }
       this.applyTheme(current);
+      this.applyLanguage(currentLanguage);
     });
   }
 
@@ -138,12 +206,32 @@ export class SettingsDialogComponent {
     }
   }
 
+  changeLanguage(option: LanguageOption) {
+    this.language.set(option);
+  }
+
+  getLanguageLabel(option: LanguageOption) {
+    switch (option) {
+      case 'vi':
+        return 'Tiếng Việt';
+      case 'en':
+        return 'English';
+    }
+  }
+
   private applyTheme(option: ThemeOption) {
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
     const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
     const theme = option === 'system' ? (prefersDark ? 'dark' : 'light') : option;
     root.dataset.theme = theme;
+  }
+
+  private applyLanguage(option: LanguageOption) {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    root.lang = option;
+    root.dataset.language = option;
   }
 }
 
